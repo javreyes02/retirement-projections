@@ -38,25 +38,21 @@ pre_retire_projections <- start_model %>%
 
 end_pre_retire_invest = pre_retire_projections %>% tail(1) %>% pull(invest_grow)
 
-## Project post-retirement spending growth
-post_retire_spend_projections <- start_model %>%
-  filter(flag_pre_retire == 0) %>%
-  mutate(spend_inflate = accumulate(spend_retire, ~(.x*(1 + inflation_per)))) %>%
-  select(years, spend_inflate)
-
-
 ## Project post-retirement investment growth, net spend
 post_retire_projections <- start_model %>%
   filter(flag_pre_retire == 0) %>%
-  left_join(post_retire_spend_projections) %>%
+  ## left_join(post_retire_spend_projections) %>%
   mutate(invest_grow = 0, 
+         spend_inflate = 0,
          first_year = ifelse(years == min(years), 1, 0)) %>%
   vctrs::vec_chop() %>%
   accumulate(function(out, new) {
     if (out$first_year == 1) {
+      new$spend_inflate <- (spend_retire*(1 + inflation_per))
       new$invest_grow <- (end_pre_retire_invest*(1 + rr_post_retire)) - out$spend_inflate
     } else {
       new$invest_grow <- (out$invest_grow*(1 + rr_post_retire)) - out$spend_inflate
+      new$spend_inflate <- (out$spend_inflate*(1 + inflation_per))
     }
     new
   }) %>%
