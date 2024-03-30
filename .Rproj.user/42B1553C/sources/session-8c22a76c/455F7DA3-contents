@@ -8,7 +8,7 @@ hh_income = 150000
 retire_invest_annual = 50000
 curr_retire_invest = 150000
 exp_income_increase_per = 0.03
-spend_retirement = 120000
+spend_retire = 120000
 retire_years = 45
 
 rr_pre_retire = .08
@@ -23,9 +23,8 @@ years <- c(1:total_time)
 ## Set up model structure
 start_model <- tibble(years = years) %>%
   ## inputs
-  mutate(hh_income = hh_income,
-         curr_retire_invest = curr_retire_invest,
-         exp_income_increase_per = exp_income_increase_per,
+  mutate(curr_retire_invest = curr_retire_invest,
+         spend_retire = spend_retire,
          flag_pre_retire = ifelse(years <= pre_retire_time, 1, 0)) 
 
 ## Project pre-retirement investment growth
@@ -39,11 +38,34 @@ pre_retire_projections <- start_model %>%
 
 end_pre_retire_invest = pre_retire_projections %>% tail(1) %>% pull(invest_grow)
 
+## Project post-retirement spending growth
+post_retire_spend_projections <- start_model %>%
+  filter(flag_pre_retire == 0) %>%
+  mutate(spend_inflate = accumulate(spend_retire, ~(.x*(1 + inflation_per)))) %>%
+  select(years, spend_inflate)
+
+
 ## Project post-retirement investment growth, net spend
 post_retire_projections <- start_model %>%
   filter(flag_pre_retire == 0) %>%
-  mutate(end_pre_retire_invest = end_pre_retire_invest,
-         invest_grow = accumulate(end_pre_retire_invest, ~(.x*(1 + rr_post_retire)) - spend_retirement))
+  left_join(post_retire_spend_projections) %>%
+  mutate(invest_grow = 0, 
+         first_year = ifelse(years == min(years), 1, 0)) %>%
+  vctrs::vec_chop() %>%
+  accumulate(function(out, new) {
+    if (out$first_year == 1) {
+      new$invest_grow <- (end_pre_retire_invest*(1 + rr_post_retire)) - out$spend_inflate
+    } else {
+      new$invest_grow <- (out$invest_grow*(1 + rr_post_retire)) - out$spend_inflate
+    }
+    new
+  }) %>%
+  bind_rows()
+
+# mutate(spend_inflate = accumulate(spend_retire, ~(.x*(1 + inflation_per)))) %>%
+
+         
+         # ~(.x*(1 + rr_post_retire)) - .y)
 
 ## Combine projections
 stack <- pre_retire_projections %>% bind_rows(post_retire_projections)
