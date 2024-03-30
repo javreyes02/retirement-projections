@@ -23,33 +23,23 @@ years <- c(1:total_time)
 ## Set up model structure
 start_model <- tibble(years = years) %>%
   ## inputs
-  mutate(curr_retire_invest = curr_retire_invest,
-         spend_retire = spend_retire,
-         flag_pre_retire = ifelse(years <= pre_retire_time, 1, 0)) 
+  mutate(flag_pre_retire = ifelse(years <= pre_retire_time, 1, 0)) 
 
-## Project pre-retirement investment growth
-pre_retire_projections <- start_model %>%
-  filter(flag_pre_retire == 1) %>%
-  ## calculations
-  mutate(
-  ## investment growth
-  invest_grow = accumulate(curr_retire_invest, ~(.x*(1 + rr_pre_retire)) + retire_invest_annual)
-  )
-
-end_pre_retire_invest = pre_retire_projections %>% tail(1) %>% pull(invest_grow)
-
-## Project post-retirement investment growth, net spend
-post_retire_projections <- start_model %>%
-  filter(flag_pre_retire == 0) %>%
-  ## left_join(post_retire_spend_projections) %>%
+## Project investment growth, net spend
+projections <- start_model %>%
   mutate(invest_grow = 0, 
          spend_inflate = 0,
-         first_year = ifelse(years == min(years), 1, 0)) %>%
+         first_year = ifelse(years == min(years), 1, 0),
+         switch_retire = ifelse(flag_pre_retire == 0 & lag(flag_pre_retire == 1), 1, 0)) %>%
   vctrs::vec_chop() %>%
   accumulate(function(out, new) {
     if (out$first_year == 1) {
+      new$invest_grow <- (curr_retire_invest*(1 + rr_pre_retire)) + retire_invest_annual
+    } else if (out$flag_pre_retire == 1) {
+      new$invest_grow <- (out$invest_grow*(1 + rr_pre_retire)) + retire_invest_annual
+    } else if (out$switch_retire == 1) {
       new$spend_inflate <- (spend_retire*(1 + inflation_per))
-      new$invest_grow <- (end_pre_retire_invest*(1 + rr_post_retire)) - out$spend_inflate
+      new$invest_grow <- (out$invest_grow*(1 + rr_post_retire)) - out$spend_inflate
     } else {
       new$invest_grow <- (out$invest_grow*(1 + rr_post_retire)) - out$spend_inflate
       new$spend_inflate <- (out$spend_inflate*(1 + inflation_per))
@@ -58,15 +48,9 @@ post_retire_projections <- start_model %>%
   }) %>%
   bind_rows()
 
-# mutate(spend_inflate = accumulate(spend_retire, ~(.x*(1 + inflation_per)))) %>%
-
-         
-         # ~(.x*(1 + rr_post_retire)) - .y)
-
-## Combine projections
-stack <- pre_retire_projections %>% bind_rows(post_retire_projections)
-
 ## Visualize
 library(ggplot2)
-ggplot(stack, aes(x = years, y = invest_grow)) +
+projections %>%
+  pivot_longer(cols = c(invest_grow, spend_inflate), names_to = "type", values_to = "amount") %>%
+  ggplot(aes(x = years, y = amount, color = type)) +
   geom_line()
