@@ -3,7 +3,7 @@
     "path": "~/Dev/R/_projects/retirement-projections/code/01_model.R",
     "project_path": "code/01_model.R",
     "type": "r_source",
-    "hash": "3398482715",
+    "hash": "3348229771",
     "contents": "",
     "dirty": false,
     "created": 1711595227355.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "67,0",
-        "scrollLine": "32"
+        "cursorPosition": "14,23",
+        "scrollLine": "0"
     },
     "folds": "",
-    "lastKnownWriteTime": 1712022528,
+    "lastKnownWriteTime": 1712024169,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1712022528485,
+    "last_content_update": 1712024169554,
     "read_only": false,
     "read_only_alternatives": []
 }
