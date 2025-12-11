@@ -1,8 +1,0 @@
-library('dplyr')
-library('stringr')
-library('purrr')
-library('writexl')
-library('glue')
-
-root <- "/Users/Julia/Dev/R/_projects/retirement-projections"
-

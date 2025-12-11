@@ -2,18 +2,18 @@ rm(list = ls())
 header <- source('code/header.R')
 
 ## Set parameters
-# current_age = 26
-# retire_age = 50
-# hh_income = 150000
-# retire_invest_annual = 50000
-# curr_retire_invest = 150000
-# exp_income_increase_per = 0.03
-# spend_retire = 120000
-# retire_years = 35
-# 
-# rr_pre_retire = .08
-# rr_post_retire = .052
-# inflation_per = 0.04
+current_age = 27
+retire_age = 48
+hh_income = 195000
+retire_invest_annual = 100000
+curr_retire_invest = 410000
+exp_income_increase_per = 0.03
+spend_retire = 120000
+retire_years = 40
+
+rr_pre_retire = .08
+rr_post_retire = .052
+inflation_per = 0.04
 
 error_num_inputs <- function(input, friendly_name) {
   if(input < 0) {
@@ -29,7 +29,7 @@ get_projections <- function(
   curr_retire_invest,
   spend_retire,
   retire_years,
-  rr_pre_retire = .08,
+  rr_pre_retire = .07,
   rr_post_retire = .052,
   inflation_per = 0.04
   
@@ -80,12 +80,12 @@ get_projections <- function(
       if (out$first_year == 1) {
         new$invest_grow <- (curr_retire_invest*(1 + rr_pre_retire)) + retire_invest_annual
       } else if (new$switch_retire == 1) {
-        new$invest_grow <- (out$invest_grow*(1 + rr_post_retire)) - spend_retire
+        new$invest_grow <- (out$invest_grow - spend_retire)*(1 + rr_post_retire)
         new$spend_inflate <- spend_retire
       } else if (out$flag_pre_retire == 1) {
         new$invest_grow <- (out$invest_grow*(1 + rr_pre_retire)) + retire_invest_annual
       }  else {
-        new$invest_grow <- (out$invest_grow*(1 + rr_post_retire)) - out$spend_inflate
+        new$invest_grow <- (out$invest_grow - out$spend_inflate)*(1 + rr_post_retire)
         new$spend_inflate <- (out$spend_inflate*(1 + inflation_per))
       }
       new
@@ -95,7 +95,7 @@ get_projections <- function(
 }
 
 inputs <- tribble(~current_age, ~retire_age, ~retire_invest_annual, ~curr_retire_invest, ~spend_retire, ~retire_years,
-        26, 50, 50000, 150000, 120000, 50)
+        27, 45, 100000, 410000, 100000, 40)
 
 projections <- pmap(inputs, get_projections)
 
@@ -109,7 +109,7 @@ make_graph <- function(df) {
     ggplot(aes(x = age, y = amount, color = type)) +
     geom_line() + 
     labs(title = "Retirement Projections", x = "Age") +
-    scale_y_continuous(name = "", labels = scales::dollar_format()) +
+    scale_y_continuous(name = "", labels = scales::dollar_format(),  breaks = seq(0, max(df$invest_grow, df$spend_inflate, na.rm = TRUE), by = 1000000)) +
     scale_color_discrete(name = "", labels = c('Retirement Investments', "Retirement Spending")) +
     theme_light() +
     theme(
