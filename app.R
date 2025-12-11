@@ -1,5 +1,5 @@
 rm(list = ls())
-# header <- source('code/header.R') # Commented out as I don't have this file
+header <- source('code/header.R') 
 library(shiny)
 library(ggplot2)
 library(scales)
