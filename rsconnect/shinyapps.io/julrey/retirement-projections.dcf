@@ -1,0 +1,10 @@
+name: retirement-projections
+title:
+username: julrey
+account: julrey
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16291541
+bundleId: 11306689
+url: https://julrey.shinyapps.io/retirement-projections/
+version: 1
