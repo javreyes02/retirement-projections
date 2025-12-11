@@ -27,6 +27,14 @@ ui <- fluidPage(
                    min = 0, 
                    max = 100),
       
+      sliderInput(inputId = "inflation_rate",
+                  label = "Inflation Rate:",
+                  min = 0,
+                  max = 10,
+                  value = 4,
+                  step = 0.25,
+                  post = "%"),
+      
       sliderInput(inputId = "retire_invest_annual",
                   label = "Annual Retirement Contributions:",
                   min = 1,
@@ -77,8 +85,7 @@ server <- function(input, output) {
     
     rr_pre_retire = .08
     rr_post_retire = .052
-    inflation_per = 0.04
-    
+    inflation_per = input$inflation_rate / 100
     
     # Setup -------------------------------------------------------------------
     
