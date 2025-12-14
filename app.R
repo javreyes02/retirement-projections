@@ -110,8 +110,8 @@ server <- function(input, output) {
     spend_retire = input$spend_retire
     retire_years = input$retire_years
     
-    rr_pre_retire = .08
-    rr_post_retire = .052
+    rr_pre_retire = input$pre_retire_roi / 100
+    rr_post_retire = input$post_retire_roi / 100
     inflation_per = input$inflation_rate / 100
     
     # Setup -------------------------------------------------------------------
