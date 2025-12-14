@@ -4,6 +4,7 @@ library(shiny)
 library(ggplot2)
 library(scales)
 library(shinyWidgets)
+library(plotly)
 
 ui <- fluidPage(
   
@@ -91,7 +92,7 @@ ui <- fluidPage(
     mainPanel(
       
       # Output: Line graph of projections ----
-      plotOutput(outputId = "distPlot")
+      plotlyOutput(outputId = "distPlot")
       
     )
   )
@@ -100,7 +101,7 @@ ui <- fluidPage(
 # Define server logic
 server <- function(input, output) {
   
-  output$distPlot <- renderPlot({
+  output$distPlot <- renderPlotly({
     
     current_age = input$current_age
     retire_age = input$retire_age
@@ -159,10 +160,12 @@ server <- function(input, output) {
       bind_rows() 
     
     ## graphing
-    projections %>%
+    p <- projections %>%
       pivot_longer(cols = c(invest_grow, spend_inflate), names_to = "type", values_to = "amount") %>%
-      ggplot(aes(x = age, y = amount, color = type)) +
-      geom_line(linewidth = 1.2) + # Added linewidth for better visibility
+      ggplot(aes(x = age, y = amount, color = type, group = type)) +
+      geom_line(aes(text = paste0("Age: ", age, "<br>", 
+                                  "Amount: ", scales::dollar(amount, accuracy = 1))), 
+                linewidth = 1.2) + 
       labs(title = "Retirement Projections", x = "Age") +
       scale_y_continuous(name = "", 
                          labels = scales::dollar_format(),
@@ -176,6 +179,9 @@ server <- function(input, output) {
         plot.title = element_text(size = 18, hjust = 0.5)
       ) 
     
+    ggplotly(p, tooltip = "text") %>% 
+      layout(legend = list(orientation = "h", x = 0.1, y = -0.2), # Fix legend position for plotly
+      hovermode = "x")
   })
   
 }
