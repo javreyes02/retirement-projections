@@ -3,6 +3,7 @@ header <- source('code/header.R')
 library(shiny)
 library(ggplot2)
 library(scales)
+library(shinyWidgets)
 
 ui <- fluidPage(
   
@@ -163,7 +164,10 @@ server <- function(input, output) {
       ggplot(aes(x = age, y = amount, color = type)) +
       geom_line(linewidth = 1.2) + # Added linewidth for better visibility
       labs(title = "Retirement Projections", x = "Age") +
-      scale_y_continuous(name = "", labels = scales::dollar_format()) +
+      scale_y_continuous(name = "", 
+                         labels = scales::dollar_format(),
+                         breaks = scales::pretty_breaks(n = 10)) +
+      scale_x_continuous(breaks = scales::pretty_breaks(n = 15)) +
       scale_color_manual(values = c("invest_grow" = "#2E86C1", "spend_inflate" = "#E74C3C"),
                          labels = c('Retirement Investments', "Annual Spending (Future $)")) + 
       theme_light() +
