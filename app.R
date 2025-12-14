@@ -34,21 +34,34 @@ ui <- fluidPage(
       
       # --- SECTION 2: FINANCIALS ---
       h4("Financials"),
-      numericInput(inputId = "curr_retire_invest",
-                   label = "Current Investments ($)",
-                   value = 7000),
+
+      autonumericInput(inputId = "curr_retire_invest",
+                       label = "Current Investments",
+                       value = 7000,
+                       currencySymbol = "$",
+                       digitGroupSeparator = ",",
+                       decimalPlaces = 0),
       
-      numericInput(inputId = "retire_invest_annual",
-                   label = "Annual Contributions ($)",
-                   value = 6000),
+      autonumericInput(inputId = "retire_invest_annual",
+                       label = "Annual Contributions",
+                       value = 6000,
+                       currencySymbol = "$",
+                       digitGroupSeparator = ",",
+                       decimalPlaces = 0),
       
-      numericInput(inputId = "spend_retire",
-                   label = "Annual Spending in Retirement (Today's $)",
-                   value = 60000),
+      autonumericInput(inputId = "spend_retire",
+                       label = "Annual Spending in Retirement (Today's $)",
+                       value = 60000,
+                       currencySymbol = "$",
+                       digitGroupSeparator = ",",
+                       decimalPlaces = 0),
       
-      numericInput(inputId = "retire_income",
-                   label = "Other Retirement Income (SS/Pension, Today's $)",
-                   value = 0),
+      autonumericInput(inputId = "retire_income",
+                       label = "Other Retirement Income (SS/Pension)",
+                       value = 0,
+                       currencySymbol = "$",
+                       digitGroupSeparator = ",",
+                       decimalPlaces = 0),
       
       hr(),
       
