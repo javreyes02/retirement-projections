@@ -12,7 +12,6 @@ ui <- fluidPage(
   # Sidebar layout with input and output definitions ----
   sidebarLayout(
     
-    # Sidebar panel for inputs ----
     sidebarPanel(
       
       numericInput(inputId = "current_age", 
@@ -31,31 +30,31 @@ ui <- fluidPage(
                   label = "Inflation Rate:",
                   min = 0,
                   max = 10,
-                  value = 4,
+                  value = 3, 
                   step = 0.25,
                   post = "%"),
       
       sliderInput(inputId = "retire_invest_annual",
                   label = "Annual Retirement Contributions:",
-                  min = 1,
-                  max = 200000,
-                  value = 10000),
+                  min = 0,          
+                  max = 200000,      
+                  value = 6000),    
       
       sliderInput(inputId = "curr_retire_invest",
                   label = "Current Retirement Investments:",
-                  min = 1,
-                  max = 1000000,
-                  value = 10000),
+                  min = 0,          
+                  max = 1000000,     
+                  value = 7000),    
       
       sliderInput(inputId = "spend_retire",
                   label = "Annual Spending in Retirement (Today's $):",
-                  min = 1,
-                  max = 1000000,
-                  value = 100000),
+                  min = 10000,
+                  max = 500000,
+                  value = 60000),  
       
       numericInput(inputId = "retire_years", 
                    label = "Retirement Length in Years", 
-                   value = 35, 
+                   value = 25,      
                    min = 0, 
                    max = 100)
       
