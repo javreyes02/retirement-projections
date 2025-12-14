@@ -9,55 +9,68 @@ ui <- fluidPage(
   # App title ----
   titlePanel("Retirement Projections"),
   
-  # Sidebar layout with input and output definitions ----
   sidebarLayout(
     
     sidebarPanel(
       
+      # --- SECTION 1: TIMELINE ---
+      h4("Timeline"),
       numericInput(inputId = "current_age", 
                    label = "Current Age", 
                    value = 25, 
-                   min = 0, 
-                   max = 100),
+                   min = 0, max = 100),
       
       numericInput(inputId = "retire_age", 
                    label = "Retirement Age", 
                    value = 65, 
-                   min = 0, 
-                   max = 100),
+                   min = 0, max = 100),
+      
+      numericInput(inputId = "retire_years", 
+                   label = "Retirement Length (Years)", 
+                   value = 25, 
+                   min = 0, max = 100),
+      
+      hr(), # Horizontal Line for visual separation
+      
+      # --- SECTION 2: FINANCIALS ---
+      h4("Financials"),
+      numericInput(inputId = "curr_retire_invest",
+                   label = "Current Investments ($)",
+                   value = 7000),
+      
+      numericInput(inputId = "retire_invest_annual",
+                   label = "Annual Contributions ($)",
+                   value = 6000),
+      
+      numericInput(inputId = "spend_retire",
+                   label = "Annual Spending in Retirement (Today's $)",
+                   value = 60000),
+      
+      numericInput(inputId = "retire_income",
+                   label = "Other Retirement Income (SS/Pension, Today's $)",
+                   value = 0),
+      
+      hr(),
+      
+      # --- SECTION 3: RATES ---
+      h4("Market Assumptions"),
+      
+      numericInput(inputId = "pre_retire_roi",
+                   label = "Pre-Retirement Return (%)",
+                   value = 7,
+                   step = 0.1),
+      
+      numericInput(inputId = "post_retire_roi",
+                   label = "Post-Retirement Return (%)",
+                   value = 4,
+                   step = 0.1),
       
       sliderInput(inputId = "inflation_rate",
                   label = "Inflation Rate:",
-                  min = 0,
-                  max = 10,
-                  value = 3, 
+                  min = 0, max = 10,
+                  value = 3,
                   step = 0.25,
-                  post = "%"),
-      
-      sliderInput(inputId = "retire_invest_annual",
-                  label = "Annual Retirement Contributions:",
-                  min = 0,          
-                  max = 200000,      
-                  value = 6000),    
-      
-      sliderInput(inputId = "curr_retire_invest",
-                  label = "Current Retirement Investments:",
-                  min = 0,          
-                  max = 1000000,     
-                  value = 7000),    
-      
-      sliderInput(inputId = "spend_retire",
-                  label = "Annual Spending in Retirement (Today's $):",
-                  min = 10000,
-                  max = 500000,
-                  value = 60000),  
-      
-      numericInput(inputId = "retire_years", 
-                   label = "Retirement Length in Years", 
-                   value = 25,      
-                   min = 0, 
-                   max = 100)
-      
+                  post = "%")
     ),
     
     # Main panel for displaying outputs ----
