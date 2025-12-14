@@ -1,5 +1,5 @@
 rm(list = ls())
-header <- source('code/header.R') 
+# header <- source('code/header.R') 
 library(shiny)
 library(ggplot2)
 library(scales)
@@ -36,7 +36,7 @@ ui <- fluidPage(
       
       # --- SECTION 2: FINANCIALS ---
       h4("Financials"),
-
+      
       autonumericInput(inputId = "curr_retire_invest",
                        label = "Current Investments",
                        value = 7000,
@@ -50,6 +50,18 @@ ui <- fluidPage(
                        currencySymbol = "$",
                        digitGroupSeparator = ",",
                        decimalPlaces = 0),
+      
+      # --- SECTION 3: CoastFI Section ---
+      checkboxInput("coast_mode", "Enable 'CoastFI' Mode?", value = FALSE),
+      
+      conditionalPanel(
+        condition = "input.coast_mode == true",
+        wellPanel( # wellPanel gives it a gray background to stand out
+          helpText("Stop/reduce contributions at age:"),
+          numericInput("coast_age", "Coast Age", 40, 0, 100),
+          autonumericInput("coast_contrib", "New Contribution Amount", 0, currencySymbol = "$", digitGroupSeparator = ",", decimalPlaces = 0)
+        )
+      ),
       
       autonumericInput(inputId = "spend_retire",
                        label = "Annual Spending in Retirement (Today's $)",
@@ -67,7 +79,7 @@ ui <- fluidPage(
       
       hr(),
       
-      # --- SECTION 3: RATES ---
+      # --- SECTION 4: RATES ---
       h4("Market Assumptions"),
       
       numericInput(inputId = "pre_retire_roi",
@@ -110,6 +122,10 @@ server <- function(input, output) {
     spend_retire = input$spend_retire
     retire_years = input$retire_years
     
+    coast_mode = input$coast_mode
+    coast_age = input$coast_age
+    coast_contrib = input$coast_contrib
+    
     rr_pre_retire = input$pre_retire_roi / 100
     rr_post_retire = input$post_retire_roi / 100
     inflation_per = input$inflation_rate / 100
@@ -124,7 +140,7 @@ server <- function(input, output) {
     # Calculate the future dollar value of the desired spending 
     # based on inflation between now and retirement age.
     future_spend_start <- spend_retire * ((1 + inflation_per) ^ pre_retire_time)
-
+    
     
     ## Set up model structure
     start_model <- tibble(years = years) %>%
@@ -144,13 +160,23 @@ server <- function(input, output) {
              switch_retire = ifelse(flag_pre_retire == 0 & lag(flag_pre_retire) == 1, 1, 0)) %>%
       vctrs::vec_chop() %>%
       accumulate(function(out, new) {
+        
+        # Default to standard contribution
+        this_year_contrib <- retire_invest_annual
+        
+        # If Coast Mode is ON and we have passed the Coast Age, switch to the new amount
+        if (coast_mode == TRUE && new$age > coast_age) {
+          this_year_contrib <- coast_contrib
+        }
+        
         if (out$first_year == 1) {
-          new$invest_grow <- (curr_retire_invest*(1 + rr_pre_retire)) + retire_invest_annual
+          new$invest_grow <- (curr_retire_invest*(1 + rr_pre_retire)) + this_year_contrib
         } else if (new$switch_retire == 1) {
           new$invest_grow <- (out$invest_grow - future_spend_start)*(1 + rr_post_retire)
           new$spend_inflate <- future_spend_start
         } else if (out$flag_pre_retire == 1) {
-          new$invest_grow <- (out$invest_grow*(1 + rr_pre_retire)) + retire_invest_annual
+          # UPDATED: Now uses 'this_year_contrib' instead of the static input
+          new$invest_grow <- (out$invest_grow*(1 + rr_pre_retire)) + this_year_contrib
         }  else {
           new$invest_grow <- (out$invest_grow - out$spend_inflate)*(1 + rr_post_retire)
           new$spend_inflate <- (out$spend_inflate*(1 + inflation_per))
@@ -181,7 +207,7 @@ server <- function(input, output) {
     
     ggplotly(p, tooltip = "text") %>% 
       layout(legend = list(orientation = "h", x = 0.1, y = -0.2), # Fix legend position for plotly
-      hovermode = "x")
+             hovermode = "x")
   })
   
 }
